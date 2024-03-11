@@ -2,7 +2,7 @@
   "index": "Introduction",
   "another": "Another Page",
   "advanced": "Advanced (A Folder)",
-  "about": {
+  "home": {
     "title": "HOME",
     "type": "page"
   },
