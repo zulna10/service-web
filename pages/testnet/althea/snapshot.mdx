@@ -1,0 +1,73 @@
+import { Steps } from 'nextra/components'
+import { Tabs } from 'nextra/components'
+import { Step } from 'nextra/components'
+import { Callout } from 'nextra/components'
+
+
+# Snapshot
+
+Jump faster to the latest block with our fresh snapshot.
+
+<Tabs items={['']}>
+
+</Tabs>
+
+## Snapshot Information
+
+
+ 
+<Callout type="info" emoji="ℹ️">
+  Every 12 hours, snapshots are taken automatically!
+</Callout>
+
+<Callout type="string" >
+    ✦ Block: -
+
+    ✦ Size: -
+
+    ✦ Time: -
+
+    ✦ URL: -
+</Callout>
+
+<Steps>
+### Reset Block
+
+    ```js filename="Make sure backup your priv_validator_state.json before reset" copy
+    sudo systemctl stop andromeda
+    cp $HOME/.andromeda/data/priv_validator_state.json $HOME/.andromeda/priv_validator_state.json.backup
+    rm -rf $HOME/.andromeda/data
+    ```
+
+### Dwonload Snapshot
+
+```js filename="Download the latest snapshot" copy
+curl -L https://snap.nodex.one/andromeda/andromeda-latest.tar.lz4 | tar -Ilz4 -xf - -C $HOME/.andromeda
+```
+### Backup state data
+
+```js filename="Return state file to the previous location" copy
+mv $HOME/.andromeda/priv_validator_state.json.backup $HOME/.andromeda/data/priv_validator_state.json
+```
+
+### Restart Node
+
+```js filename="Restart your nodes after download a snapshot" copy
+sudo systemctl restart andromeda
+```
+
+
+
+
+
+
+
+
+
+
+
+
+</Steps>
+
+
+

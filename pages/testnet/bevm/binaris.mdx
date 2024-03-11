@@ -1,0 +1,97 @@
+import { Steps } from 'nextra/components'
+import { Callout } from 'nextra/components'
+import { Tabs } from 'nextra/components'
+
+# LETSS GO🚀
+
+<Tabs items={['']}>
+
+</Tabs>
+
+
+<Steps>
+
+### Upgrade Package
+
+```js filename="Upgrade Package" copy
+sudo apt-get update
+sudo apt-get upgrade
+```
+
+### Create Directory
+```js filename="Create Directory" copy
+mkdir -p $HOME/.bevm
+```
+
+### Dwonload Bineries
+```js filename="Dwonload Bineries" copy
+wget -O bevm https://github.com/btclayer2/BEVM/releases/download/testnet-v0.1.1/bevm-v0.1.1-ubuntu20.04 && chmod +x bevm
+sudo cp bevm /usr/bin/
+bevm --version
+```
+
+<Callout type="info" emoji="🚀">
+ Fund your address with faucet first with EVM Address (0x)
+
+- go to channel faucet on discord BEVM
+
+- /faucet your_address_evm
+</Callout>
+
+### Create Services
+
+<Callout type="info" emoji="🚀">
+-name=replace_your_evm_address
+</Callout>
+
+```js filename="Create Service & Chnage Wallet" copy
+sudo tee /etc/systemd/system/bevm-node.service > /dev/null << EOF
+[Unit]
+Description=BEVM Node
+After=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+User=$USER
+Restart=always
+RestartSec=3
+ExecStart=/usr/bin/bevm \
+  --base-path $HOME/.bevm/data/validator/replace_with_your_address_evm \
+  --name replace_with_your_address_evm \
+  --chain testnet \
+  --telemetry-url "wss://telemetry.bevm.io/submit 0"
+[Install]
+WantedBy=multi-user.target
+EOF
+```
+
+### Start Service 
+```js filename="Start Service" copy
+sudo systemctl daemon-reload
+
+sudo systemctl enable bevm-node
+
+sudo systemctl start bevm-node
+```
+
+
+### Check Log
+
+```js filename=" Check Your Logs" copy
+sudo journalctl -u bevm-node -f --no-hostname -o cat
+```
+
+
+<Callout type="info" emoji="ℹ️">
+Check on Telementary, Wait 30 minutes - 1 hours
+</Callout>
+
+Link: https://telemetry.bevm.io/#/
+
+
+
+
+
+
+
+</Steps>

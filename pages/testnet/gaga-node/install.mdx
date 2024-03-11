@@ -1,0 +1,120 @@
+import { Steps } from 'nextra/components'
+import { Callout } from 'nextra/components'
+import { Tabs } from 'nextra/components'
+
+
+# How To Run GaGa Node
+
+Register : https://dashboard.gaganode.com/register
+
+<Tabs items={['']}>
+
+</Tabs>
+
+<Steps>
+
+### Install Dependencies Packages
+
+```js filename="Install Dependencies Packages" copy
+sudo apt-get update -y && sudo apt-get -y install curl tar ca-certificates
+```
+
+### Dwonload And Install
+```js filename="Dwonload & Install" copy
+curl -o apphub-linux-amd64.tar.gz https://assets.coreservice.io/public/package/60/app-market-gaga-pro/1.0.4/app-market-gaga-pro-1_0_4.tar.gz && tar -zxf apphub-linux-amd64.tar.gz && rm -f apphub-linux-amd64.tar.gz && cd ./apphub-linux-amd64 && sudo ./apphub service install
+```
+Your OutPut: ⬇⬇⬇
+
+```js filename="Console OutPut" 
+meson@meson-server:~$ curl -o apphub-linux-amd64.tar.gz https://assets.coreservice.io/public/package/60/app-market-gaga-pro/1.0.4/app-market-gaga-pro-1_0_4.tar.gz && tar -zxf apphub-linux-amd64.tar.gz && rm -f apphub-linux-amd64.tar.gz && cd ./apphub-linux-amd64 && sudo ./apphub service install
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 7752k  100 7752k    0     0  4171k      0  0:00:01  0:00:01 --:--:-- 4170k
+[sudo] password for meson:
+2022/12/13 06:52:47 [info] systemd detected
+Install app service:					[  OK  ]
+
+```
+
+### Start Services
+
+```js filename="Start Services" copy
+sudo ./apphub service start
+```
+Your OutPut: ⬇⬇⬇
+```js filename="Console OutPut" 
+meson@meson-server:~/app-linux-amd64$ sudo ./apphub service start
+2022/12/13 06:52:57 [info] systemd detected
+Starting app service:					[  OK  ]
+```
+
+### Check App Status
+
+```js filename="Check App Status" copy
+./apphub status
+```
+Your OutPut: ⬇⬇⬇
+```js filename="Console Output"
+meson@meson-server:~/app-linux-amd64$ ./apphub status
+[gaganode]:		local version:[1.0.3] latest version:[1.0.3] status:[DOWNLOADED]
+```
+
+### Set Token
+
+```js filename="Set Token" copy
+sudo ./apps/gaganode/gaganode config set --token=`your token`
+```
+Your OutPut: ⬇⬇⬇
+```js filename="Console OutPut"
+meson@meson-server:~/app-linux-amd64$ sudo ./apps/gaganode/gaganode config set --token=albrcgctlhzgdhramuywpwje
+new config generated
+restart for the new configuration to take effect
+```
+
+### Restart APP
+
+```js filename="Restart APP" copy
+./apphub restart
+```
+
+Your OutPut: ⬇⬇⬇
+
+```js filename="Console Output"
+meson@meson-server:~/app-linux-amd64$ ./apphub restart
+restart command send, system will reboot...
+```
+
+
+WELL DONE ✔
+
+</Steps>
+
+## COMMAND REFERENCE
+
+```js filename="install node" copy
+sudo ./apphub service install  
+```
+```js filename=" Start Node" copy
+sudo ./apphub service start   
+```
+```js filename="Stop Node" copy
+sudo ./apphub service stop 
+```
+```js filename="Remove Node" copy
+sudo ./apphub service remove
+```
+```js filename="check node running status" copy
+./apphub status
+```
+```js filename="Restart Node" copy
+./apphub restart
+```
+```js filename="Upgrade Node" copy
+./apphub upgrade
+```
+```js filename="Check Log" copy
+./apphub log
+```
+```js filename="Check Help" copy
+./apphub -h 
+```

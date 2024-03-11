@@ -1,0 +1,214 @@
+import { Steps } from 'nextra/components'
+ 
+
+
+
+
+## Manual installation
+
+Let's explore the manual installation process as we set up a node with Cosmovisor!
+
+<Tabs items={['']}>
+
+</Tabs>
+
+<Steps>
+### Install Dependencies
+
+```js filename="Update system package and install build tools" copy
+sudo apt -q update
+sudo apt -qy install curl git jq lz4 build-essential fail2ban ufw
+sudo apt -qy upgrade
+```
+
+
+>grape is good
+
+
+### Secure Setup
+
+import { Tabs } from 'nextra/components'
+ 
+<Tabs items={['Step 1', 'Step 3', 'Step 3', 'Step 4']}>
+  <Tabs.Tab>
+        ```js filename="Update system package and install build tools" copy
+        sudo adduser andromeda --disabled-password -q
+        sudo usermod -aG sudo andromeda
+        sudo -u andromeda bash -c 'mkdir -p ~/.ssh && echo "YOUR_PUBLIC_SSH_KEY" >> ~/.ssh/authorized_keys && chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys'
+        ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+        ```js filename="Granting sudo privileges for andromeda user " copy
+        echo "andromeda ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers
+        ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+        ```js filename=" " copy
+        su - andromeda -c 'sudo sed -i "s|^PermitRootLogin .*|PermitRootLogin no|" /etc/ssh/sshd_config'
+        su - andromeda -c 'sudo sed -i "s|^ChallengeResponseAuthentication .*|ChallengeResponseAuthentication no|" /etc/ssh/sshd_config'
+        su - andromeda -c 'sudo sed -i "s|^#PasswordAuthentication .*|PasswordAuthentication no|" /etc/ssh/sshd_config'
+        su - andromeda -c 'sudo sed -i "s|^#PermitEmptyPasswords .*|PermitEmptyPasswords no|" /etc/ssh/sshd_config'
+        su - andromeda -c 'sudo sed -i "s|^#PubkeyAuthentication .*|PubkeyAuthentication yes|" /etc/ssh/sshd_config'
+        sudo systemctl restart sshd
+        ```
+    </Tabs.Tab>
+    <Tabs.Tab>
+    ```js filename="Configure firewall setting" copy
+    sudo apt install -y ufw
+    sudo ufw default deny incoming
+    sudo ufw default allow outgoing
+    sudo ufw allow ssh
+    sudo ufw enable
+    ```
+    </Tabs.Tab>
+
+
+</Tabs>
+
+### Configure Moniker
+
+    ```js filename="Replace <your-moniker-name> with your own validator name" copy
+    MONIKER="<your-moniker-name>"
+    ```
+
+### Install Go
+    ```js filename="install go version 1.20.11 " copy
+    sudo rm -rf /usr/local/go
+    curl -Ls https://go.dev/dl/go1.20.11.linux-amd64.tar.gz | sudo tar -xzf - -C /usr/local
+    eval $(echo 'export PATH=$PATH:/usr/local/go/bin' | sudo tee /etc/profile.d/golang.sh)
+    eval $(echo 'export PATH=$PATH:$HOME/go/bin' | tee -a $HOME/.profile)
+    ```
+
+### Build Bineries
+
+    ```js filename="Cloning project repository & Compile binaries " copy
+    cd $HOME
+    rm -rf andromedad
+    git clone https://github.com/andromedaprotocol/andromedad.git
+    cd andromedad
+    git checkout andromeda-1-v0.1.0
+    make build
+    ```
+
+import { Callout } from 'nextra/components'
+ 
+<Callout type="info" emoji="🎯">
+  Latest commit : 
+</Callout>
+
+    ```js filename="Prepare binaries for cosmovisor " copy
+    mkdir -p $HOME/.andromeda/cosmovisor/genesis/bin
+    mv bin/andromedad $HOME/.andromeda/cosmovisor/genesis/bin/
+    ```
+
+    ```js filename="Create symlinks" copy
+    sudo ln -s $HOME/.andromeda/cosmovisor/genesis $HOME/.andromeda/cosmovisor/current -f
+    sudo ln -s $HOME/.andromeda/cosmovisor/current/bin/andromedad /usr/local/bin/andromedad -f
+    ```
+### Cosmovisor Setup
+    ```js filename="Install cosmovisor" copy
+    go install cosmossdk.io/tools/cosmovisor/cmd/cosmovisor@v1.5.0
+    ```
+
+### Create Service
+
+    ```js filename="Create a systemd service" copy
+    sudo tee /etc/systemd/system/andromeda.service > /dev/null << EOF
+    [Unit]
+    Description=andromeda node service
+    After=network-online.target
+    
+    [Service]
+    User=$USER
+    ExecStart=$(which cosmovisor) run start
+    Restart=on-failure
+    RestartSec=10
+    LimitNOFILE=65535
+    Environment="DAEMON_HOME=$HOME/.andromeda"
+    Environment="DAEMON_NAME=andromedad"
+    Environment="UNSAFE_SKIP_BACKUP=true"
+    Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:$HOME/.andromeda/cosmovisor/current/bin"
+    
+    [Install]
+    WantedBy=multi-user.target
+    EOF
+    ```
+
+### Enable Service
+
+    ```js filename="Enable andromeda systemd service" copy
+    sudo systemctl daemon-reload
+    sudo systemctl enable andromeda
+    ```
+
+### Initialize node
+
+    ```js filename="Setting node configuration" copy
+    andromedad config chain-id andromeda-1
+    andromedad config keyring-backend file
+    andromedad config node tcp://localhost:12057
+    ```
+    ```js filename="Initialize node" copy
+    andromedad init $MONIKER --chain-id andromeda-1
+    ```
+
+### Dwonload Genesis & Addrbook
+
+    ```js filename="Download genesis & addrbook file" copy
+    curl -Ls https://snap.nodex.one/andromeda/genesis.json > $HOME/.andromeda/config/genesis.json
+    curl -Ls https://snap.nodex.one/andromeda/addrbook.json > $HOME/.andromeda/config/addrbook.json
+    ```
+    <Callout type="info" emoji="🎯">
+         Sha256sum : 
+    </Callout>
+
+### Configure Seeds
+
+    ```js filename="Setting up a seed peers" copy
+    sed -i -e "s|^seeds *=.*|seeds = \"5f5cfac5c38506fbb4275c19e87c4107ec48808d@seeds.nodex.one:12010\"|" $HOME/.andromeda/config/config.toml
+    ```
+
+### Configure Gas Price
+
+    ```js filename="Setting up a gas prices" copy
+    sed -i -e "s|^minimum-gas-prices *=.*|minimum-gas-prices = \"0.001uandr\"|" $HOME/.andromeda/config/app.toml
+    ```
+
+### Prunning Setting
+
+    ```js filename="Configure pruning setting" copy
+    sed -i \
+        -e 's|^pruning *=.*|pruning = "custom"|' \
+        -e 's|^pruning-keep-recent *=.*|pruning-keep-recent = "100"|' \
+        -e 's|^pruning-keep-every *=.*|pruning-keep-every = "0"|' \
+        -e 's|^pruning-interval *=.*|pruning-interval = "19"|' \
+        $HOME/.andromeda/config/app.toml
+    ```
+
+### Custom Port
+
+<Callout type="info" emoji="🎯">
+  Latest commit : 
+</Callout>
+
+    ```js filename="Configure a custom port" copy
+    sed -i -e "s%^proxy_app = \"tcp://127.0.0.1:26658\"%proxy_app = \"tcp://127.0.0.1:12058\"%; s%^laddr = \"tcp://127.0.0.1:26657\"%laddr = \"tcp://127.0.0.1:12057\"%; s%^pprof_laddr = \"localhost:6060\"%pprof_laddr = \"localhost:12060\"%; s%^laddr = \"tcp://0.0.0.0:26656\"%laddr = \"tcp://0.0.0.0:12056\"%; s%^prometheus_listen_addr = \":26660\"%prometheus_listen_addr = \":12066\"%" $HOME/.andromeda/config/config.toml
+    sed -i -e "s%^address = \"tcp://0.0.0.0:1317\"%address = \"tcp://0.0.0.0:12017\"%; s%^address = \":8080\"%address = \":12080\"%; s%^address = \"0.0.0.0:9090\"%address = \"0.0.0.0:12090\"%; s%^address = \"0.0.0.0:9091\"%address = \"0.0.0.0:12091\"%; s%:8545%:12045%; s%:8546%:12046%; s%:6065%:12065%" $HOME/.andromeda/config/app.toml
+    ```
+
+### Dwonload Snapshot
+
+    ```js filename="Download latest chain snapshot" copy
+    curl -L https://snap.nodex.one/andromeda/andromeda-latest.tar.lz4 | tar -Ilz4 -xf - -C $HOME/.andromeda
+    [[ -f $HOME/.andromeda/data/upgrade-info.json ]] && cp $HOME/.andromeda/data/upgrade-info.json $HOME/.andromeda/cosmovisor/genesis/upgrade-info.json
+    ```
+
+### Start Service
+
+    ```js filename="letss GOOO!!!!!" copy
+    sudo systemctl start andromeda
+    ```
+
+
+</Steps>
+

@@ -1,0 +1,59 @@
+import { Tabs } from 'nextra/components'
+import { Steps } from 'nextra/components'
+
+# State Sync
+
+Cathing up to the latest block like a magic!
+
+<Tabs items={['']}>
+
+</Tabs>
+
+<Steps>
+### Reset Blockchain Data
+
+```js filename="Make sure backup your priv_validator_state.json before reset" copy
+sudo systemctl stop andromeda
+cp $HOME/.andromeda/data/priv_validator_state.json $HOME/.andromeda/priv_validator_state.json.backup
+andromedad tendermint unsafe-reset-all --keep-addr-book --home $HOME/.andromeda
+```
+### Configure State Sync
+
+```js filename="Configure state sync information" copy
+STATE_SYNC_RPC=https://andromeda.rpc.nodex.one:443
+STATE_SYNC_PEER=0e9387a4aa548998eda8f2bb4a5cd799345d5367@andromeda.rpc.nodex.one:12056
+LATEST_HEIGHT=$(curl -s $STATE_SYNC_RPC/block | jq -r .result.block.header.height)
+SYNC_BLOCK_HEIGHT=$((LATEST_HEIGHT - 2000))
+SYNC_BLOCK_HASH=$(curl -s "$STATE_SYNC_RPC/block?height=$SYNC_BLOCK_HEIGHT" | jq -r .result.block_id.hash)
+ 
+echo $LATEST_HEIGHT $SYNC_BLOCK_HEIGHT $SYNC_BLOCK_HASH
+ 
+sed -i \
+  -e "s|^enable *=.*|enable = true|" \
+  -e "s|^rpc_servers *=.*|rpc_servers = \"$STATE_SYNC_RPC,$STATE_SYNC_RPC\"|" \
+  -e "s|^trust_height *=.*|trust_height = $SYNC_BLOCK_HEIGHT|" \
+  -e "s|^trust_hash *=.*|trust_hash = \"$SYNC_BLOCK_HASH\"|" \
+  -e "s|^persistent_peers *=.*|persistent_peers = \"$STATE_SYNC_PEER\"|" \
+  $HOME/.andromeda/config/config.toml
+```
+
+### Backup State Data
+
+```js filename="Return state file to the previous location" copy
+mv $HOME/.andromeda/priv_validator_state.json.backup $HOME/.andromeda/data/priv_validator_state.json
+```
+
+### Restart Node
+
+```js filename="Restart your nodes after perform a state sync" copy
+sudo systemctl start andromeda
+```
+
+
+
+
+
+
+
+
+</Steps>

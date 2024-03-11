@@ -1,0 +1,82 @@
+import { Steps } from 'nextra/components'
+import { Callout } from 'nextra/components'
+import { Tabs } from 'nextra/components'
+
+# LETSS GO🚀
+
+<Tabs items={['']}>
+
+</Tabs>
+
+
+<Steps>
+
+### Upgrade Package
+
+```js filename="Upgrade Package" copy
+sudo apt-get update
+sudo apt-get upgrade
+```
+
+### Get Docker
+```js filename="Get Docker" copy
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+```
+
+### Create Directory
+```js filename="Create Directory" copy
+mkdir /var/lib/node_bevm_test_storage
+```
+
+### Pull Docker
+```js filename="Pull Docker" copy
+sudo docker pull btclayer2/bevm:v0.1.1
+```
+
+<Callout type="info" emoji="🚀">
+ Fund your address with faucet first with EVM Address (0x)
+
+- go to channel faucet on discord BEVM
+
+- /faucet your_address_evm
+</Callout>
+
+### Create Services
+
+<Callout type="info" emoji="🚀">
+-name=replace_your_evm_address
+</Callout>
+
+```js filename="Change your wallet" copy
+sudo docker run -d -v /var/lib/node_bevm_test_storage:/root/.local/share/bevm btclayer2/bevm:v0.1.1 bevm "--chain=testnet" "--name=replace_your_evm_address" "--pruning=archive" --telemetry-url "wss://telemetry.bevm.io/submit 0"
+```
+
+<Callout type="warning" emoji="⚠️">
+ output : 4bd1990d73dc9c91f260ef26a7f4c30c90fbb4679ea63395f9b2c7c55631a5e2
+</Callout>
+
+### Check Log
+
+<Callout type="warning" emoji="⚠️">
+ sudo docker logs -f use-your-output
+</Callout>
+
+```js filename=" Check Your Logs" copy
+sudo docker logs -f 4bd1990d73dc9c91f260ef26a7f4c30c90fbb4679ea63395f9b2c7c55631a5e2
+```
+
+
+<Callout type="info" emoji="ℹ️">
+Check on Telementary, Wait 30 minutes - 1 hours
+</Callout>
+
+Link: https://telemetry.bevm.io/#/
+
+
+
+
+
+
+
+</Steps>
